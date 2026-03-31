@@ -1,5 +1,5 @@
 """
-app.py  —  StayWorth Flask Backend (with Extra Guest Fee)
+app.py  —  StayWorth Flask Backend (with Extra Guest Fee + Amenity Bonus)
 """
 
 import os, json, math, pathlib, pickle, hashlib, secrets
@@ -164,6 +164,34 @@ AMENITY_LIST  = list(AMENITY_MAP.keys())
 ALL_AMEN_COLS = [c for c in FEATURE_COLS if c.startswith("amen_")]
 
 # ─────────────────────────────────────────────────────────────
+#  AMENITY BONUS TABLE (Business Logic Layer)
+#  → Yeh real-world Airbnb pricing se inspired hai
+#  → Model base price deta hai, yeh layer premium features
+#    ka value add karti hai
+# ─────────────────────────────────────────────────────────────
+AMENITY_BONUS = {
+    "pool":      5.0,   # Premium outdoor feature
+    "gym":       7.0,   # Fitness facility
+    "doorman":   10.0,   # Security/concierge
+    "breakfast":  8.0,   # Included meal
+    "elevator":   8.0,   # Accessibility/convenience
+    "parking":    7.0,   # High demand in cities
+    "washer":     6.0,   # Convenience feature
+    "kitchen":    6.0,   # Self-catering capability
+    "ac":         5.0,   # Comfort feature
+    "wifi":       4.0,   # Basic but expected
+    "tv":         3.0,   # Entertainment
+    "pets":       3.0,   # Pet-friendly premium
+}
+
+def calculate_amenity_bonus(amenities: list) -> float:
+    """
+    Har selected amenity ka bonus add karo.
+    Agar amenity AMENITY_BONUS mein nahi hai → default $2 bonus.
+    """
+    return round(sum(AMENITY_BONUS.get(a.lower(), 2.0) for a in amenities), 2)
+
+# ─────────────────────────────────────────────────────────────
 #  PREPROCESS INPUT
 # ─────────────────────────────────────────────────────────────
 def preprocess_input(data: dict) -> np.ndarray:
@@ -242,18 +270,23 @@ def quick_predict(base_data: dict) -> float:
         return 0.0
 
 # ─────────────────────────────────────────────────────────────
-#  EXTRA GUEST FEE LOGIC (Naya Addition)
+#  EXTRA GUEST FEE LOGIC
 # ─────────────────────────────────────────────────────────────
 def calculate_final_price(base_nightly: float, accommodates: int) -> float:
     """Base 4 guests tak normal price, uske baad har extra guest ke liye $10 extra"""
     if accommodates <= 4:
         return base_nightly
-    
     extra_guests = accommodates - 4
-    extra_fee_per_night = 10.0          # ← Yahan change kar sakte ho (8 ya 12 bhi rakh sakte)
-    
-    final_price = base_nightly + (extra_guests * extra_fee_per_night)
-    return round(final_price, 2)
+    extra_fee_per_night = 10.0
+    return round(base_nightly + (extra_guests * extra_fee_per_night), 2)
+
+def calculate_bedroom_price(base_nightly: float, bedrooms: int) -> float:
+    """Extra charge for more bedrooms"""
+    if bedrooms <= 1:
+        return base_nightly
+    extra_bedrooms = bedrooms - 1
+    extra_fee = 28.0
+    return round(base_nightly + (extra_bedrooms * extra_fee), 2)
 
 # ─────────────────────────────────────────────────────────────
 #  RETRAIN FUNCTION
@@ -269,20 +302,42 @@ def retrain_on_real_data():
     print("Retrain done")
 
 # ─────────────────────────────────────────────────────────────
-#  PREDICT ROUTE (with extra guest fee)
+#  PREDICT ROUTE
+#  Price calculation order:
+#  1. Model → base_price (XGBoost prediction)
+#  2. Guest fee → agar accommodates > 4
+#  3. Amenity bonus → har selected amenity ka premium add
 # ─────────────────────────────────────────────────────────────
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json(force=True)
     try:
+        # Step 1: Model se base price
         X = preprocess_input(data)
-        log_pred = float(model.predict(X)[0])
+        log_pred   = float(model.predict(X)[0])
         base_price = round(math.expm1(log_pred), 2)
-        
+
+        # Step 2: Extra guest fee
         accommodates = int(data.get("accommodates", 4))
-        final_price = calculate_final_price(base_price, accommodates)
-        
-        return jsonify({"nightly_rate": final_price})
+        price_with_guests = calculate_final_price(base_price, accommodates)
+
+        # Step 3: Amenity bonus add karo
+        amenities = data.get("amenities", [])
+        if isinstance(amenities, str):
+            amenities = [a.strip().lower() for a in amenities.split("|") if a.strip()]
+        else:
+            amenities = [str(a).strip().lower() for a in amenities]
+
+        amenity_bonus = calculate_amenity_bonus(amenities)
+        final_price   = round(price_with_guests + amenity_bonus, 2)
+
+        print(f"base={base_price} | guests={price_with_guests} | amenity_bonus={amenity_bonus} | final={final_price}")
+
+        return jsonify({
+            "nightly_rate":   final_price,
+            "base_price":     base_price,        # Debug ke liye
+            "amenity_bonus":  amenity_bonus,      # Debug ke liye
+        })
     except Exception as e:
         print(f"Predict Error: {e}")
         return jsonify({"error": str(e)}), 400
@@ -329,7 +384,7 @@ def save_data():
         return jsonify({"error": str(e)}), 400
 
 # ─────────────────────────────────────────────────────────────
-#  GRAPHS ROUTE (with extra guest fee)
+#  GRAPHS ROUTE
 # ─────────────────────────────────────────────────────────────
 CITIES     = ["NYC", "LA", "Chicago", "SF", "Miami"]
 ROOM_TYPES = ["Entire home/apt", "Private room", "Shared room"]
@@ -340,15 +395,12 @@ def graphs():
     try:
         base_data = {**data, "amenities": data.get("amenities", [])}
 
-        # ================== GUESTS WITH EXTRA FEE ==================
+        # Guests vs Price (with extra guest fee)
         accommodates_vs_price = []
         for g in range(1, 11):
-            base_price = quick_predict({**base_data, "accommodates": g})
+            base_price  = quick_predict({**base_data, "accommodates": g})
             final_price = calculate_final_price(base_price, g)
-            accommodates_vs_price.append({
-                "accommodates": g,
-                "price": final_price
-            })
+            accommodates_vs_price.append({"accommodates": g, "price": final_price})
 
         # City Comparison
         city_comparison = [
@@ -356,26 +408,29 @@ def graphs():
             for c in CITIES
         ]
 
-        # Bedrooms
-        bedrooms_vs_price = [
-            {"bedrooms": b, "price": quick_predict({**base_data, "bedrooms": b})}
-            for b in range(0, 7)
-        ]
+        # Bedrooms vs Price
+        bedrooms_vs_price = []
+        for b in range(0, 7):
+            base_price  = quick_predict({**base_data, "bedrooms": b})
+            final_price = calculate_bedroom_price(base_price, b)
+            bedrooms_vs_price.append({"bedrooms": b, "price": final_price})
 
-        # Amenity Impact
-        base_price = quick_predict({**base_data, "amenities": []})
+        # Amenity Impact (with bonus included)
+        base_price_no_amen = quick_predict({**base_data, "amenities": []})
         amenity_impact = []
         for frontend_label in AMENITY_LIST:
-            with_a = quick_predict({**base_data, "amenities": [frontend_label]})
-            impact = round(with_a - base_price, 2)
+            with_a      = quick_predict({**base_data, "amenities": [frontend_label]})
+            bonus       = AMENITY_BONUS.get(frontend_label, 2.0)
+            final_with  = round(with_a + bonus, 2)
+            impact      = round(final_with - base_price_no_amen, 2)
             amenity_impact.append({
                 "amenity": frontend_label,
-                "price":   with_a,
+                "price":   final_with,
                 "impact":  max(0, impact),
             })
         amenity_impact.sort(key=lambda x: x["impact"], reverse=True)
 
-        # Room Type
+        # Room Type Prices
         room_type_prices = [
             {"room": rt, "price": quick_predict({**base_data, "room_type": rt})}
             for rt in ROOM_TYPES
@@ -417,6 +472,7 @@ if __name__ == "__main__":
     print("  StayWorth Flask API  —  http://127.0.0.1:5000")
     print(f"  Model dir  : {MODEL_DIR}")
     print(f"  Features   : {len(FEATURE_COLS)}")
-    print(f"  Extra Guest Fee: $10 per guest after 4 guests")
+    print(f"  Extra Guest Fee : $10 per guest after 4 guests")
+    print(f"  Amenity Bonus   : Pool=$15, Gym=$10, Elevator=$8 ...")
     print("=" * 60)
     app.run(debug=True, port=5000, host="0.0.0.0")
