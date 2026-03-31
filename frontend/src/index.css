@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .field-label {
+    @apply block text-sm font-semibold mb-2 text-gray-800;
+  }
+
+  .field-input {
+    @apply w-full border border-gray-200 rounded-2xl px-5 py-3.5 text-sm
+           focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100
+           transition-all bg-gray-50 focus:bg-white placeholder:text-gray-400;
+  }
+
+  .field-select {
+    @apply w-full border border-gray-200 rounded-2xl px-5 py-3.5 text-sm
+           focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100
+           transition-all bg-gray-50 focus:bg-white cursor-pointer;
+  }
+
+  .section-label {
+    @apply uppercase text-xs tracking-widest font-bold text-gray-400 mb-5;
+  }
+}
+
+/* Ticker marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+/* Modal fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Smooth scrollbar */
+* { scrollbar-width: thin; scrollbar-color: #e5e7eb transparent; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }

@@ -1,0 +1,31 @@
+{
+  "rating_mean": 3.4258819429748913e-16,
+  "model_version": "2.0",
+  "features": [
+    "property_type",
+    "room_type",
+    "accommodates",
+    "bathrooms",
+    "bed_type",
+    "cancellation_policy",
+    "cleaning_fee",
+    "city",
+    "host_response_rate",
+    "instant_bookable",
+    "neighbourhood",
+    "number_of_reviews",
+    "review_scores_rating",
+    "bedrooms",
+    "beds",
+    "amen_wifi",
+    "amen_ac",
+    "amen_kitchen",
+    "amen_tv",
+    "amen_washer",
+    "amen_parking",
+    "amen_elevator",
+    "amen_pets",
+    "beds_and_baths",
+    "price_per_room"
+  ]
+}

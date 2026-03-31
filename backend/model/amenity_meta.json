@@ -1,0 +1,22 @@
+{
+  "amenity_columns": [
+    "amen_wifi",
+    "amen_ac",
+    "amen_kitchen",
+    "amen_tv",
+    "amen_washer",
+    "amen_parking",
+    "amen_elevator",
+    "amen_pets"
+  ],
+  "amenity_names": [
+    "wifi",
+    "ac",
+    "kitchen",
+    "tv",
+    "washer",
+    "parking",
+    "elevator",
+    "pets"
+  ]
+}

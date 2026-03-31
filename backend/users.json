@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "nirali",
+    "email": "nirali@gmail.com",
+    "password": "674f29bf014093fc023aacdbae5b6704785394e3479a782fc0ec741bc6e1ac93",
+    "created_at": "2026-03-31T16:25:33.074925"
+  },
+  {
+    "id": 2,
+    "name": "harsh",
+    "email": "harsh@gmail.com",
+    "password": "d67a56cd5ae153c5599fe13db7269c16dcb9fdf32907ec81e1093d01bf2ba55f",
+    "created_at": "2026-03-31T20:04:05.228844"
+  },
+  {
+    "id": 3,
+    "name": "niralid",
+    "email": "nirali12@gmail.com",
+    "password": "335af9650417f2a6fcdcfe22e49fa0ffe685de875d4bcecab43611c6db01948c",
+    "created_at": "2026-03-31T20:42:48.297729"
+  },
+  {
+    "id": 4,
+    "name": "rinku",
+    "email": "rinku@gmail.com",
+    "password": "080529d4c0c037828d1e66e67b18656c7cb4291a15fee2a2d9227641d7b501d2",
+    "created_at": "2026-03-31T20:48:00.402863"
+  }
+]
