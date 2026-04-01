@@ -26,5 +26,47 @@
     "email": "rinku@gmail.com",
     "password": "080529d4c0c037828d1e66e67b18656c7cb4291a15fee2a2d9227641d7b501d2",
     "created_at": "2026-03-31T20:48:00.402863"
+  },
+  {
+    "id": 5,
+    "name": "sonal",
+    "email": "sonal@gmail.com",
+    "password": "53e5a7a6f816b0dc78563e8bb5ac0a918dbbc9ab03f458625800d16c3479298e",
+    "created_at": "2026-03-31T22:08:21.722683"
+  },
+  {
+    "id": 6,
+    "name": "kunal",
+    "email": "kunal@gmail.com",
+    "password": "cae6d8632e9a6d7243b4691ec9b8e0e1c9b8422c235962e5138ac9d2b300ef20",
+    "created_at": "2026-03-31T22:11:15.715674"
+  },
+  {
+    "id": 7,
+    "name": "krisha",
+    "email": "krisha@gmail.com",
+    "password": "79fa041cfa49b9c69b591df854e35c474492b74607d8afe6a2994e623908e67f",
+    "created_at": "2026-03-31T22:35:45.960489"
+  },
+  {
+    "id": 8,
+    "name": "hemal",
+    "email": "hemal@gmail.com",
+    "password": "bda28bf92f07a1c30ee0a62d1cd5126c15666aa128adda9c6e9cc14bcd8e7314",
+    "created_at": "2026-04-01T11:15:17.856871"
+  },
+  {
+    "id": 9,
+    "name": "nishtha",
+    "email": "nishtha@gmail.com",
+    "password": "a88405dba00d0dab391a68085884184cbd6ca0a495efc32c7538ab36829e0de6",
+    "created_at": "2026-04-01T13:24:32.695683"
+  },
+  {
+    "id": 10,
+    "name": "shreya",
+    "email": "shreya@gmail.com",
+    "password": "a922c40cf82061693dfb35deec586e3e754046a3a3d672e221e5a2b7a2c25ac7",
+    "created_at": "2026-04-01T13:39:23.709816"
   }
 ]
